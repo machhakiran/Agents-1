@@ -27,7 +27,7 @@
 * 📦 **Output:** A PR with the original ticket context, `ai-generated` label, and optional reviewer assignment.
 
 > [!NOTE]
-> See `AI_Agent_PDR.md` and `AGENT_FUNCTIONAL_PLAN.md` for product and functional design. Credentials and env setup: `agent/README_CREDENTIALS.md`.
+> See `AI_Agent_PDR.md` and `AGENT_FUNCTIONAL_PLAN.md` for product and functional design. Credentials and env setup: `agent/README_CREDENTIALS.md`. Step-by-step **which .py files run and in what order**: `agent/FLOW_PY_FILES.md`.
 
 ---
 
@@ -263,6 +263,7 @@ agent/
 ├── 📄 pyproject.toml
 ├── 📄 .env.example
 ├── 📄 README_CREDENTIALS.md
+├── 📄 FLOW_PY_FILES.md        # Step-by-step: which .py files run, start → end
 └── 🐳 Dockerfile
 ```
 
