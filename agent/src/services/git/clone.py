@@ -81,14 +81,20 @@ def create_feature_branch(work_dir: Path, task: TaskContext) -> str:
     Create and checkout feature branch from default_branch.
     Branch name: ai/<ticket-id>-<slug> (slug from title, sanitized).
     Returns the new branch name.
+    Handles shallow clones: prefers origin/base, falls back to HEAD if fetch fails.
     """
     work_dir = Path(work_dir)
     base = task.default_branch or "main"
     ticket_slug = re.sub(r"[^a-zA-Z0-9]+", "-", (task.ticket_id + " " + (task.title or ""))[:60]).strip("-") or "task"
     branch_name = f"ai/{ticket_slug}"[:100]
 
-    _run_git(work_dir, "fetch", "origin", base)
-    _run_git(work_dir, "checkout", "-b", branch_name, f"origin/{base}")
+    r = _run_git(work_dir, "fetch", "origin", base)
+    if r.returncode == 0:
+        _run_git(work_dir, "checkout", "-b", branch_name, f"origin/{base}")
+    else:
+        # Shallow clone or remote ref missing: create branch from current HEAD
+        logger.debug("Fetch origin/%s failed (%s), creating branch from HEAD", base, r.stderr or r.stdout)
+        _run_git(work_dir, "checkout", "-b", branch_name)
     return branch_name
 
 

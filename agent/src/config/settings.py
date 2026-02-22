@@ -4,10 +4,15 @@ See README_CREDENTIALS.md for which credentials are MANDATORY vs default.
 """
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Agent root = directory containing src/ (i.e. agent/)
+_AGENT_ROOT = Path(__file__).resolve().parent.parent.parent
+_DEFAULT_WORKSPACE = str(_AGENT_ROOT / "workspaces")
 
 
 class Settings(BaseSettings):
@@ -72,8 +77,8 @@ class Settings(BaseSettings):
 
     # ----- Pipeline -----
     workspace_base: str = Field(
-        default="/tmp/ai_agent_workspaces",
-        description="Base directory for clone workspaces",
+        default=_DEFAULT_WORKSPACE,
+        description="Base directory for clone workspaces (default: agent/workspaces)",
     )
     max_validation_retries: int = Field(default=5, description="Max self-healing retries (F5)")
     task_timeout_seconds: int = Field(default=1800, description="Max seconds per task run")

@@ -238,12 +238,14 @@ PR Comment Webhook (F7) ←─────────────────�
 
 ## 5. Success Criteria for “Full Functional” Agent
 
-- [ ] Ticket assigned in Jira/Git triggers webhook and task is processed asynchronously.
-- [ ] Repo is cloned, branch created, codebase mapped, and implementation plan generated.
-- [ ] Code is generated and applied with aider; linter and tests run and retry until pass (or max retries).
-- [ ] PR is opened with correct title, description, label, and reviewers; author is the agent.
-- [ ] PR comments can trigger automatic code updates and new commits on the same PR.
-- [ ] All secrets are externalized; runs are isolated and traceable.
-- [ ] Service runs in Docker and is deployable to Cloud Run (or equivalent).
+- [x] Ticket assigned in Jira/Git triggers webhook and task is processed asynchronously.
+- [x] Repo is cloned, branch created, codebase mapped, and implementation plan generated.
+- [x] Code is generated and applied; linter and tests run and retry until pass (or max retries).
+- [x] PR creation (commit, push, PR via PyGitHub) — requires `GITHUB_TOKEN` with push scope.
+- [ ] PR comments trigger automatic code updates (F7: stub endpoint; F7.2–F7.5 pending).
+- [x] All secrets are externalized; runs are isolated and traceable.
+- [x] Service runs in Docker and is deployable to Cloud Run (or equivalent).
+
+**Note:** 403 on push = token expired, missing `repo` scope, or fine-grained token without push. See [agent/README_CREDENTIALS.md](agent/README_CREDENTIALS.md).
 
 This plan is ready to be used as the single source of truth for building the autonomous AI development agent from ticket to PR, including PR feedback handling.

@@ -90,12 +90,18 @@ def run_pipeline(task: TaskContext) -> None:
                     break
 
         # Phase 4: deliver only when validation passed and we have code changes (Phase 2 ran)
-        if (
-            validation_passed
-            and branch_name
-            and settings.anthropic_api_key
-            and (settings.github_token or settings.gitlab_token)
-        ):
+        has_changes = False
+        if validation_passed and branch_name and settings.anthropic_api_key and (settings.github_token or settings.gitlab_token):
+            # Only commit/push/PR if there are actual changes (F6)
+            try:
+                from ..services.git.clone import _run_git
+                r = _run_git(work_dir, "status", "--porcelain")
+                has_changes = bool(r.stdout and r.stdout.strip())
+            except Exception:
+                has_changes = True  # assume changes if check fails
+        if not has_changes and validation_passed and branch_name:
+            log_task(logger, task.ticket_id, "Skipping PR: no changes to commit", run_id=run_id)
+        if has_changes:
             commit_message = f"{task.ticket_id}: {task.title or 'Implement task'}"[:200]
             commit(work_dir, commit_message)
             push(work_dir, branch_name)

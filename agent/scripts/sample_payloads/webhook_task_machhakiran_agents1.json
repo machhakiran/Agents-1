@@ -2,7 +2,7 @@
   "issue": {
     "number": 1,
     "title": "Add README section for AI Teammate",
-    "body": "Add a short section to README describing the AI Teammate agent and link to the main README.",
+    "body": "change the Readme file copy right description use machhakiran name and linked in profile ",
     "labels": [{"name": "enhancement"}],
     "assignees": [{"login": "machhakiran"}],
     "user": {"login": "machhakiran"}

@@ -297,6 +297,7 @@ After the first run finishes, you can send the same payload again; the second ru
 | **Validation failed / no PR** | Linter or tests failed and self-heal hit max retries. Check logs for the exact errors. |
 | **PR not created** | Validation must pass. Need `GITHUB_TOKEN` (or `GITLAB_TOKEN`) and run must have completed Phase 2 (so there is code to commit). |
 | **Module not found** when starting server | Run from the `agent` directory and set `PYTHONPATH=${PWD}` (or run `uvicorn` from `agent` so `src` is on the path). |
+| **Clone failed: could not write config file ... Operation not permitted** | Default workspace is `/tmp/ai_agent_workspaces`. Set a writable path in `.env`: `WORKSPACE_BASE=./workspaces` (from agent/) or `WORKSPACE_BASE=$HOME/ai_agent_workspaces`. Run `mkdir -p workspaces` in agent/ if using relative path. |
 
 ---
 

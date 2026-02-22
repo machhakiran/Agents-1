@@ -8,7 +8,7 @@ Use **defaults** where possible for local/dev. The following must be set in **pr
 
 | Variable | When required | Notes |
 |----------|----------------|--------|
-| **GITHUB_TOKEN** | GitHub as Git provider (clone private repos, create PRs) | Personal Access Token with `repo` scope. **Never** commit; use env or secret manager. |
+| **GITHUB_TOKEN** | GitHub as Git provider (clone private repos, create PRs) | Personal Access Token with `repo` scope (includes push). Classic PAT: Settings → Developer settings → Personal access tokens. **403 "Permission denied"** on push: token expired, wrong scope, or fine-grained token missing push access. |
 | **GITLAB_TOKEN** | GitLab as Git provider | Project/Group access token or Personal Access Token. |
 | **ANTHROPIC_API_KEY** | Phase 2+ (code generation, planning) | Required for Claude API. No default. |
 
