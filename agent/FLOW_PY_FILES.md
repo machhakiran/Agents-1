@@ -4,6 +4,206 @@ This document traces **which Python files run and in what order** from the momen
 
 ---
 
+## Flow diagrams (Mermaid)
+
+### 1. Request → pipeline: which `.py` files run (arrow = calls/uses)
+
+```mermaid
+flowchart TB
+    subgraph ENTRY["Entry"]
+        main["main.py"]
+    end
+    subgraph API["API layer"]
+        routes_init["api/routes/__init__.py"]
+        health["api/routes/health.py"]
+        webhooks["api/routes/webhooks.py"]
+    end
+    subgraph CONFIG["Config & utils"]
+        config["config/settings.py"]
+        idempotency["utils/idempotency.py"]
+        logging_util["utils/logging.py"]
+    end
+    subgraph MODELS["Models"]
+        task_model["models/task.py"]
+        plan_model["models/plan.py"]
+    end
+    subgraph CORE["Core"]
+        pipeline["core/pipeline.py"]
+    end
+    subgraph SERVICES["Services"]
+        parser["services/webhook_parser.py"]
+        clone["services/git/clone.py"]
+        codebase_map["services/codebase_map.py"]
+        planner["services/planner.py"]
+        implementer["services/implementer.py"]
+        validator["services/validator.py"]
+        llm["services/llm.py"]
+        prompts["services/prompts.py"]
+        provider["services/git/provider.py"]
+        github["services/git/github_provider.py"]
+        gitlab["services/git/gitlab_provider.py"]
+    end
+
+    main --> routes_init
+    routes_init --> health
+    routes_init --> webhooks
+    webhooks --> config
+    webhooks --> idempotency
+    webhooks --> logging_util
+    webhooks --> task_model
+    webhooks --> parser
+    parser --> task_model
+    webhooks -->|background_task| pipeline
+
+    pipeline --> config
+    pipeline --> task_model
+    pipeline --> clone
+    clone --> config
+    clone --> task_model
+    pipeline --> codebase_map
+    pipeline --> planner
+    planner --> task_model
+    planner --> plan_model
+    planner --> llm
+    planner --> prompts
+    llm --> config
+    pipeline --> implementer
+    implementer --> task_model
+    implementer --> plan_model
+    implementer --> llm
+    implementer --> prompts
+    pipeline --> validator
+    pipeline -->|on retry| implementer
+    pipeline --> clone
+    pipeline --> provider
+    provider --> github
+    provider --> gitlab
+    pipeline --> idempotency
+```
+
+### 2. Pipeline phases: `.py` communication in order (left → right)
+
+```mermaid
+flowchart LR
+    subgraph PH1["1. Webhook"]
+        W["webhooks.py"]
+        P["webhook_parser.py"]
+        I["idempotency.py"]
+        M1["models/task.py"]
+    end
+    subgraph PH2["2. Orchestrator"]
+        PIP["pipeline.py"]
+    end
+    subgraph PH3["3. Clone & branch"]
+        C["git/clone.py"]
+        CF["config/settings.py"]
+    end
+    subgraph PH4["4. Map"]
+        MAP["codebase_map.py"]
+    end
+    subgraph PH5["5. Plan"]
+        PLN["planner.py"]
+        LLM1["llm.py"]
+        PRM["prompts.py"]
+        MP["models/plan.py"]
+    end
+    subgraph PH6["6. Implement"]
+        IMP["implementer.py"]
+        LLM2["llm.py"]
+    end
+    subgraph PH7["7. Validate"]
+        V["validator.py"]
+    end
+    subgraph PH8["8. Deliver"]
+        C2["git/clone.py"]
+        PRV["git/provider.py"]
+        GH["github_provider.py"]
+        GL["gitlab_provider.py"]
+    end
+    subgraph PH9["9. Cleanup"]
+        ID["idempotency.py"]
+    end
+
+    W --> P
+    W --> I
+    P --> M1
+    W -->|run_pipeline| PIP
+    PIP --> C
+    C --> CF
+    PIP --> MAP
+    PIP --> PLN
+    PLN --> LLM1
+    PLN --> PRM
+    PLN --> MP
+    PIP --> IMP
+    IMP --> LLM2
+    IMP --> PRM
+    IMP --> MP
+    PIP --> V
+    V -.->|fail + retry| IMP
+    PIP --> C2
+    PIP --> PRV
+    PRV --> GH
+    PRV --> GL
+    PIP --> ID
+```
+
+### 3. Sequence: one task from HTTP to PR (simplified)
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant webhooks as webhooks.py
+    participant parser as webhook_parser.py
+    participant pipeline as pipeline.py
+    participant clone as git/clone.py
+    participant codebase_map as codebase_map.py
+    participant planner as planner.py
+    participant llm as llm.py
+    participant implementer as implementer.py
+    participant validator as validator.py
+    participant provider as git/provider.py
+
+    Client->>webhooks: POST /api/webhook/task
+    webhooks->>parser: parse_task_payload(body)
+    parser-->>webhooks: TaskContext
+    webhooks->>webhooks: idempotency_check()
+    webhooks->>pipeline: run_pipeline(task) [background]
+    webhooks-->>Client: 201 Accepted
+
+    Note over pipeline: Phase 1: Clone & branch
+    pipeline->>clone: get_clone_url, clone_repo, create_feature_branch
+
+    Note over pipeline: Phase 2a: Map
+    pipeline->>codebase_map: build_map(work_dir)
+
+    Note over pipeline: Phase 2b: Plan
+    pipeline->>planner: create_plan(task, repo_map)
+    planner->>llm: chat(system, user_msg)
+    llm-->>planner: plan text
+    planner-->>pipeline: ImplementationPlan
+
+    Note over pipeline: Phase 2c: Implement
+    pipeline->>implementer: implement(work_dir, task, repo_map, plan)
+    implementer->>llm: chat(...)
+    llm-->>implementer: EDIT_FILE blocks
+    implementer-->>pipeline: (files written)
+
+    Note over pipeline: Phase 3: Validate (loop)
+    pipeline->>validator: run_validation(work_dir)
+    validator-->>pipeline: success + feedback
+    alt validation failed, retries left
+        pipeline->>implementer: implement(..., feedback=...)
+    end
+
+    Note over pipeline: Phase 4: Deliver
+    pipeline->>clone: commit(), push()
+    pipeline->>provider: create_pull_request(...)
+    provider-->>pipeline: PR URL
+```
+
+---
+
 ## 1. Application start (entry point)
 
 | Step | File | Role |
