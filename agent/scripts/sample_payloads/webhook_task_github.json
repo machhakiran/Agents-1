@@ -1,0 +1,16 @@
+{
+  "issue": {
+    "number": 42,
+    "title": "Add a README line",
+    "body": "Add one line to README: Test from AI agent.",
+    "labels": [{"name": "test"}],
+    "assignees": [{"login": "YOUR_GITHUB_USERNAME"}],
+    "user": {"login": "YOUR_GITHUB_USERNAME"}
+  },
+  "repository": {
+    "full_name": "YOUR_GITHUB_USERNAME/YOUR_REPO_NAME",
+    "default_branch": "main",
+    "name": "YOUR_REPO_NAME",
+    "owner": {"login": "YOUR_GITHUB_USERNAME"}
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "issue": {
+    "number": 1,
+    "title": "Add README section for AI Teammate",
+    "body": "Add a short section to README describing the AI Teammate agent and link to the main README.",
+    "labels": [{"name": "enhancement"}],
+    "assignees": [{"login": "machhakiran"}],
+    "user": {"login": "machhakiran"}
+  },
+  "repository": {
+    "full_name": "machhakiran/Agents-1",
+    "default_branch": "main",
+    "name": "Agents-1",
+    "owner": {"login": "machhakiran"}
+  }
+}

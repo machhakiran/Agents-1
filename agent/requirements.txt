@@ -1,0 +1,18 @@
+# Agent - production dependencies
+# Python 3.11+
+
+# Web
+fastapi>=0.115.0,<0.116
+uvicorn[standard]>=0.32.0,<0.33
+pydantic>=2.9.0,<3
+pydantic-settings>=2.6.0,<3
+
+# Git
+PyGithub>=2.4.0,<3
+python-gitlab>=4.5.0,<5
+
+# LLM (Phase 2+)
+anthropic>=0.39.0,<1
+
+# Optional: Redis for idempotency (Phase 5)
+# redis>=5.0.0
