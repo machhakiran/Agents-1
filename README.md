@@ -83,91 +83,15 @@ High-level: a **FastAPI** server exposes webhook endpoints; a **pipeline** orche
 
 **System architecture** — from triggers through the app to external APIs:
 
-```mermaid
-flowchart TB
-    subgraph TRIGGERS["🎫 Triggers"]
-        direction LR
-        JIRA["Jira"]
-        GH["GitHub"]
-        GL["GitLab"]
-    end
-
-    subgraph APP["⚡ AI Teammate"]
-        subgraph API["API layer"]
-            FASTAPI["FastAPI"]
-            ROUTES["/api/health · /webhook/task · /webhook/pr-comment"]
-        end
-        subgraph CORE["Core"]
-            PIPELINE["Pipeline"]
-        end
-        subgraph SVC["Services"]
-            PARSER["webhook_parser"]
-            MAP["codebase_map"]
-            PLANNER["planner"]
-            IMPL["implementer"]
-            VAL["validator"]
-            GIT["git"]
-        end
-    end
-
-    subgraph EXTERNAL["☁️ External APIs"]
-        ANTHROPIC["Anthropic Claude"]
-        GITHUB_API["GitHub"]
-        GITLAB_API["GitLab"]
-    end
-
-    TRIGGERS -->|webhook| FASTAPI
-    FASTAPI --> ROUTES
-    ROUTES --> PIPELINE
-    PIPELINE --> PARSER
-    PIPELINE --> MAP
-    PIPELINE --> PLANNER
-    PIPELINE --> IMPL
-    PIPELINE --> VAL
-    PIPELINE --> GIT
-    PLANNER --> ANTHROPIC
-    IMPL --> ANTHROPIC
-    GIT --> GITHUB_API
-    GIT --> GITLAB_API
-```
+<div align="center">
+  <img src="static/architecture.png" alt="System Architecture Diagram" width="100%" />
+</div>
 
 **Tech stack layers** — from runtime to deployment:
 
-```mermaid
-flowchart LR
-    subgraph L1["🐍 Layer 1: Runtime"]
-        Python["Python 3.11+"]
-        Uvicorn["Uvicorn"]
-    end
-    subgraph L2["🌐 Layer 2: Web & API"]
-        FastAPI["FastAPI"]
-    end
-    subgraph L3["⚙️ Layer 3: Config & Models"]
-        Pydantic["Pydantic Settings"]
-        Models["Pydantic models"]
-    end
-    subgraph L4["🔗 Layer 4: Integrations"]
-        PyGithub["PyGithub"]
-        GitLab["python-gitlab"]
-        Anthropic["anthropic SDK"]
-    end
-    subgraph L5["🐳 Layer 5: Deployment"]
-        Docker["Docker"]
-        CloudRun["Cloud Run"]
-    end
-
-    Python --> Uvicorn
-    Uvicorn --> FastAPI
-    FastAPI --> Pydantic
-    Pydantic --> Models
-    Models --> PyGithub
-    Models --> GitLab
-    Models --> Anthropic
-    PyGithub --> Docker
-    GitLab --> Docker
-    Anthropic --> Docker
-    Docker --> CloudRun
-```
+<div align="center">
+  <img src="static/tech_stack.png" alt="Tech Stack Diagram" width="100%" />
+</div>
 
 ---
 
